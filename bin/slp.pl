@@ -15,11 +15,13 @@ use JSON::RPC2::Server;
 use Encode();
 my $server = JSON::RPC2::Server->new();
 $server->register_named('initialize',              sub {$lsp->initialize(@_)});
+$server->register_named('workspacce/didChangeConfiguration', sub {$lsp->didChangeConfiguration(@_)});
 $server->register_named('textDocument/didOpen',    sub {$lsp->didOpen(@_)});
 $server->register_named('textDocument/didChange',  sub {$lsp->didChange(@_)});
 $server->register_named('textDocument/rename',     sub {$lsp->rename(@_)});
 $server->register_named('textDocument/completion', sub {return});
 $server->register_named('textDocument/didSave',    sub {return});
+$server->register_named('textDocument/formatting',    sub {$lsp->formatting(@_)});
 $log->debug('Started');
 
 my $c_length = 0;

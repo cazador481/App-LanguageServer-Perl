@@ -1,0 +1,4 @@
+[TestingAndDebugging::RequireUseStrict]
+equivalent_modules =Moo Moo::Role
+[TestingAndDebugging::RequireUseWarnings]
+equivalent_modules =Moo Moo::Role

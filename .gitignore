@@ -1,0 +1,4 @@
+/Language-Server*
+.build
+*.ERR
+*.tdy

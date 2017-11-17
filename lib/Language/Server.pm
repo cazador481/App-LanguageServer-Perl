@@ -6,9 +6,10 @@ use Type::Utils qw(class_type);
 use MooX::StrictConstructor;
 use Data::Printer;
 use Type::Params qw(compile);  #adds compile command for subroutine validation
-use File::Slurp;
 use IPC::Run3;
 use PPIx::EditorTools::RenameVariable;
+use Perl::Tidy;
+use Language::Server::Document;
 
 use feature qw(state);
 
@@ -19,18 +20,11 @@ with 'MooX::Log::Any';         # enable logger
 
 #VERSION
 
-has file_content => (
-    is        => 'rw',
-    predicate => 1,
-    lazy      => 1,
-    default   => sub {
-        my $self = shift;
-        my $file = $self->file_uri;
-        $file =~ s!file://!!;
-        my $ret = read_file($file);
-        return $ret;
-    },
-
+has documents => ( 
+   is => 'ro',
+   isa => HashRef,
+   default=>sub {{}},
+   documentation=>'files to process',
 );
 
 has value => (
@@ -38,19 +32,16 @@ has value => (
     default => 0,
 );
 
-has file_uri => (
-    is => 'rw',
-
-    # coerce  => sub {print STDERR np @_;my $file = shift; print STDERR np($file);$file =~ s!^file://!!; return $file;},
+has rootpath => ( 
+   is => 'ro',
 );
-
 sub didOpen
 {
     my ($self, %params) = @_;
     my $uri = $params{textDocument}->{uri};
-    $self->file_uri($uri);
-    $self->file_content($params{textDocument}->{text});
-    $self->log->tracef("Editor opened file %s", $self->file_uri);
+    my $document = Language::Server::Document->new(uri => $uri, text => $params{textDocument}->{text});
+    $self->documents->{$uri}=$document;
+    $self->log->tracef("Editor opened file %s", $uri);
     return;
 }
 
@@ -76,7 +67,7 @@ sub initialize
             workspaceSymbolProvider          => 0,
             codeActionProvider               => 0,
             codeLensProvider                 => 0,
-            documentFormattingProvider       => 0,
+            documentFormattingProvider       => 1,
             documentRangeFormattingProvider  => 0,
             documentOnTypeFormattingProvider => {},
             renameProvider                   => 1
@@ -91,8 +82,8 @@ sub didChange
     my ($self, %params) = @_;
     $self->log->trace('didChange');
 
-    #todo verify that this works
-    $self->file_content($params{contentChanges}->[0]->{text});
+    # didChange returns full document change, at this time
+    $self->_get_document($params{textDocument}->{uri})->text($params{contentChanges}->[0]->{text});
 }
 
 sub didSave
@@ -113,11 +104,9 @@ sub rename
     my $col  = $params{position}->{character};
     $self->log->trace("line:$line, col:$col");
     #TODO deal with multiples
-    $self->file_uri($uri);
 
     my $new_output;
-    my $content = $self->file_content;
-    $self->log->error('File content empty') if !defined $self->file_content;
+    my $content = $self->_get_document_content($uri);
 
     $new_output = PPIx::EditorTools::RenameVariable->new->rename(
         code        => $content,
@@ -131,7 +120,7 @@ sub rename
             $uri => [{
                 range => {
                     start => {line => 0, character => 0},
-                    end   => {line => 9999999, character => 0},
+                    end   => {line => 9_999_999, character => 0},
                 },
                 newText => $new_output,
             },
@@ -142,5 +131,66 @@ sub rename
 
     my @lines;
 
+}
+
+sub formatting {
+    my ($self, %params) = @_;
+    $self->log->info(np(%params));
+    my $uri      = $params{textDocument}->{uri};
+    if (! defined $uri) {
+        return (0,-32602,'uri is not set');
+    }
+    my $text     = $self->_get_document_content($uri);
+    my $new_text = $self->tidy($text);
+
+    my $ret = [{
+                range => {
+                    start => {line => 0, character => 0},
+                    end   => {line => 9_999_999, character => 0},
+                },
+        newText => $new_text,
+    },
+    ];
+    return $ret;
+
+}
+
+sub tidy {
+    my ($self,$content)=@_;
+    my $output;
+    my $error_flag = Perl::Tidy::perltidy(
+        source=>\$content,
+        destination => \$output
+    );
+    chomp $output;
+    $self->log->infof('Tidy:[%s]',$output);
+    return $output;
+
+
+}
+
+sub _get_document_content{
+    my ($self,$uri)=@_;
+    return if (!defined $uri);
+    return $self->_get_document($uri)->text;
+}
+
+sub _get_document{
+    my ($self,$uri)=@_;
+    my $document;
+    return if (!defined $uri);
+    if (defined  $self->documents->{$uri}){
+        $document=$self->documents->{$uri};
+    }
+    else{
+        $document=Language::Server::Document->new(uri=>$uri);
+        $self->documents->{$uri}=$document;
+    }
+
+    return $document;
+}
+
+sub didChangeConfiguration{
+    my ($self,%params)=@_;
 }
 1;
