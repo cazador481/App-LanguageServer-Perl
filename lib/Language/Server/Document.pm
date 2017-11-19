@@ -82,6 +82,35 @@ sub file {
     $file_name =~ s!^file://!!;
     return $file_name;
 }
+# parse for plsense
+sub plsense_codeadd
+{
+    my $self;
+
+    system("plsense o " . $self->file);
+    my @lines;
+    foreach my $line (split(/\n/, @{$self->text})){
+        if ($line =~ /^\s+package (\S+)/)
+        {
+            my $package = $1;
+            system("plsense codeadd " . join("\n", @lines));
+            system("plsense onmod $package");
+            @lines = undef;
+        }
+        else
+        {
+            push @lines, $line;
+        }
+      }
+      if (@lines)
+    {
+        system("plsense codeadd " . join("\n", @lines));
+    }
+}
+
+sub plsense_start {
+            system('plsense serverstart');
+}
 
 sub perlcompile {
     my ($self, $errors, $global_cv) = @_;
