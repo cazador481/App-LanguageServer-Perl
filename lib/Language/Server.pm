@@ -83,7 +83,8 @@ sub didChange
     $self->log->trace('didChange');
 
     # didChange returns full document change, at this time
-    $self->_get_document($params{textDocument}->{uri})->text($params{contentChanges}->[0]->{text});
+    my $text=$params{contentChanges}->[0]->{text};
+    $self->_get_document($params{textDocument}->{uri})->text($text);
 }
 
 sub didSave

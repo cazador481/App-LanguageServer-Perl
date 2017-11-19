@@ -27,5 +27,12 @@ has 'version' => (
    is => 'ro',
 );
 
+sub file {
+    my $self=shift;
+    my $file_name=$self->uri;
+    $file_name=~s!^file://!!;
+    return $file_name;
+}
+
 1;
 
