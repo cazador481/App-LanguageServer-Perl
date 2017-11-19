@@ -14,7 +14,7 @@ as in most cases, not implementing them at all.
 
 # FEATURES
 
-* [Perl::Tidy](https://metacpan.org/pod/Perl::Tidy) full document formatting
+* [Perl::Tidy](https://metacpan.org/pod/Perl::Tidy) full document formatting, and range formatting
 * Variable renaming via [PPIx::EditorTools::RenameVariable](https://metacpan.org/pod/PPIx::EditorTools::RenameVariable)
 
 #TODO

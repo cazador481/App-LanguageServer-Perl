@@ -45,13 +45,14 @@ sub didOpen
     return;
 }
 
+
 sub initialize
 {
     my ($self, $params) = @_;
     my $ret = {
         capabilities => {
 
-            textDocumentSync => 1,
+            textDocumentSync =>  1,
 
             #  The server provides hover support.
 
@@ -68,7 +69,7 @@ sub initialize
             codeActionProvider               => 0,
             codeLensProvider                 => 0,
             documentFormattingProvider       => 1,
-            documentRangeFormattingProvider  => 0,
+            documentRangeFormattingProvider  => 1,
             documentOnTypeFormattingProvider => {},
             renameProvider                   => 1
 
@@ -103,7 +104,6 @@ sub rename
 
     my $line = $params{position}->{line} + 1;
     my $col  = $params{position}->{character};
-    $self->log->trace("line:$line, col:$col");
     #TODO deal with multiples
 
     my $new_output;
@@ -156,6 +156,27 @@ sub formatting {
 
 }
 
+sub range_formatting{
+    my ($self,%params)=@_;
+
+    my $uri      = $params{textDocument}->{uri};
+    if (! defined $uri) {
+        return (0,-32602,'uri is not set');
+    }
+    my $text     = $self->_get_document_content($uri);
+    my @text_lines=split("\n",$text);
+    my @lines_to_tidy=$text_lines[$params{range}->{start}->{line}-1 ... $params{range}->{end}->{line}-1];
+    my $new_text = $self->tidy(join("\n",@lines_to_tidy));
+
+    my $ret = [
+        {
+            range   => $params{range},
+            newText => $new_text,
+        },
+    ];
+    return $ret;
+}
+
 sub tidy {
     my ($self,$content)=@_;
     my $output;
@@ -166,8 +187,6 @@ sub tidy {
     chomp $output;
     $self->log->infof('Tidy:[%s]',$output);
     return $output;
-
-
 }
 
 sub _get_document_content{

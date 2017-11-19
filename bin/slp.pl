@@ -22,6 +22,7 @@ $server->register_named('textDocument/rename',     sub {$lsp->rename(@_)});
 $server->register_named('textDocument/completion', sub {return});
 $server->register_named('textDocument/didSave',    sub {return});
 $server->register_named('textDocument/formatting',    sub {$lsp->formatting(@_)});
+$server->register_named('textDocument/rangeFormatting',    sub {$lsp->range_formatting(@_)});
 $log->debug('Started');
 
 my $c_length = 0;
@@ -43,7 +44,7 @@ while (my $line = $io->getline)
         # $log->infof('1:%s', $io->getline);
         $io->read($line, $c_length);
         chomp $line;
-        $log->info("rpc:$line");
+        # $log->info("rpc:$line");
         process($server, $line);
     }
 }
