@@ -16,11 +16,11 @@ as in most cases, not implementing them at all.
 
 * [Perl::Tidy](https://metacpan.org/pod/Perl::Tidy) full document formatting, and range formatting
 * Variable renaming via [PPIx::EditorTools::RenameVariable](https://metacpan.org/pod/PPIx::EditorTools::RenameVariable)
+* linting via perl -c
+* linting via perlcritic
 
 #TODO
 
 * Code completion via plsense
-* Package renaming to match path
-* Create make file
-* linting via perl -c
-* linting via perlcritic
+* Package renaming to match path path
+* Make configurable via config file of some type

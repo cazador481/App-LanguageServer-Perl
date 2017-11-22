@@ -10,6 +10,7 @@ use IPC::Run3;
 use PPIx::EditorTools::RenameVariable;
 use Perl::Tidy;
 use Language::Server::Document;
+use JSON;
 
 use feature qw(state);
 
@@ -44,7 +45,6 @@ sub didOpen
     $self->log->tracef("Editor opened file %s", $uri);
     return;
 }
-
 
 sub initialize
 {
@@ -85,14 +85,15 @@ sub didChange
 
     # didChange returns full document change, at this time
     my $text=$params{contentChanges}->[0]->{text};
-    $self->_get_document($params{textDocument}->{uri})->text($text);
+    my $doc=$self->_get_document($params{textDocument}->{uri});
+    $doc->text($text);
+    # $doc->check;
 }
 
 sub didSave
 {
     my ($self, %params) = @_;
     $self->log->trace('didSave');
-
 }
 
 sub rename
