@@ -1,3 +1,4 @@
+#ABSTRACT Package thtat contains documents
 package Language::Server::Document;
 use Moo;
 use Types::Standard -all;
@@ -7,6 +8,8 @@ use AnyEvent;
 use Data::Printer;
 use JSON;
 with 'MooX::Log::Any';
+
+#VERSION
 
 has 'uri' => (
     is            => 'ro',

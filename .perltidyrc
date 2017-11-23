@@ -1,0 +1,24 @@
+--maximum-line-length=120
+#-bl      # braces left
+#-sbl     #sub brace new line
+-cti=1 
+-pt=2    # very tight, no spaces between ()
+-sbt=2   # very tight, no spaces between [] 
+-bt=2    # very tight, no spaces between {}
+-bbt=2   # very tight, no spaces between block {} 
+-nolq    # indent long string lines
+-nolc    # outdent long comments
+-msc=2   # min space t comment
+-iscl    # ignore side comment length
+-fs      # format-skipping
+
+# The defaults of #<<< and #>>> are not
+# very intuitive for a reader who's not
+# proficient in perltidy options.
+# Change these to look similar to
+# perlcritic annotations.
+-fsb='## perltidy off'
+-fse='## perltidy on'
+
+-bbao   # break before all operators
+-cab=1  # break after all => except if on online 

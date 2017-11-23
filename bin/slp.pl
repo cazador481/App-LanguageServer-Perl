@@ -1,4 +1,5 @@
 #!/home/utils/perl-5.22/5.22.0-016/bin/perl
+# PODNAME: slp.pl
 use strict;
 use warnings;
 use lib 'lib';
@@ -14,6 +15,8 @@ use Encode();
 $|++;
 use AnyEvent::Handle;
 use AE;
+
+#VERSION
 
 my $lsp = Language::Server->new;
 my $server = JSON::RPC2::Server->new();
