@@ -18,20 +18,20 @@ use AE;
 
 #VERSION
 
-my $lsp = Language::Server->new;
+my $lsp    = Language::Server->new;
 my $server = JSON::RPC2::Server->new();
-$server->register_named('initialize',              sub {$lsp->initialize(@_)});
+$server->register_named('initialize', sub {$lsp->initialize(@_)});
 
 ##### register commands #####
 $server->register_named('workspace/didChangeConfiguration', sub {$lsp->didChangeConfiguration(@_)});
-$server->register_named('textDocument/didOpen',    sub {$lsp->didOpen(@_)});
-$server->register_named('textDocument/didChange',  sub {$lsp->didChange(@_)});
-$server->register_named('textDocument/rename',     sub {$lsp->rename(@_)});
-$server->register_named('textDocument/completion', sub {return});
-$server->register_named('textDocument/didSave',    sub {return});
-$server->register_named('textDocument/formatting',    sub {$lsp->formatting(@_)});
-$server->register_named('textDocument/rangeFormatting',    sub {$lsp->range_formatting(@_)});
-$server->register_named('exit',    sub {exit});
+$server->register_named('textDocument/didOpen',             sub {$lsp->didOpen(@_)});
+$server->register_named('textDocument/didChange',           sub {$lsp->didChange(@_)});
+$server->register_named('textDocument/rename',              sub {$lsp->rename(@_)});
+$server->register_named('textDocument/completion',          sub {return});
+$server->register_named('textDocument/didSave',             sub {return});
+$server->register_named('textDocument/formatting',          sub {$lsp->formatting(@_)});
+$server->register_named('textDocument/rangeFormatting',     sub {$lsp->range_formatting(@_)});
+$server->register_named('exit',                             sub {exit});
 
 #############################################
 #
@@ -41,8 +41,8 @@ my $c_length = 0;
 
 my $io = IO::Handle->new();
 
-my $io_handle=AnyEvent::Handle->new(
-    fh => \*STDIN,
+my $io_handle = AnyEvent::Handle->new(
+    fh       => \*STDIN,
     on_error => sub {
         $log->errorf('on_error: %s', $_[2]);
         exit;
@@ -52,7 +52,6 @@ my $io_handle=AnyEvent::Handle->new(
         exit;
     }
 );
-
 
 $io_handle->on_read(
     sub {
@@ -64,8 +63,7 @@ $io_handle->on_read(
             sub {
                 my ($handle, $header) = @_;
                 $log->trace('header:' . $header);
-                if ($header =~ s/Content-Length: (\d+)\s*$//)
-                {
+                if ($header =~ s/Content-Length: (\d+)\s*$//) {
                     $c_length = $1;
                     $log->trace("length is $c_length");
                     $handle->push_read(
@@ -77,22 +75,20 @@ $io_handle->on_read(
         );
     },
 );
+
 # cause loop
 use EV;
-EV::run;#cv->recv;
+EV::run;  #cv->recv;
 exit;
 
-sub process
-{
+sub process {
     my ($server, $line) = @_;
-    try
-    {
+    try {
         my $data = from_json($line);
 
         $log->tracef("method called %s, id %s", $data->{method}, $data->{id} // 'null');
     }
-    catch
-    {
+    catch {
         $log->tracef('not json %s', $line);
         return;
     };

@@ -40,7 +40,7 @@ has 'text' => (
 
 has 'version' => (is => 'ro',);
 
-#this code block contains the timer to  check to see if there is pause in typing.  On the pause the linter fires 
+#this code block contains the timer to  check to see if there is pause in typing.  On the pause the linter fires
 has _done_typing_timer => (
     is      => 'rw',
     lazy    => 1,
@@ -48,12 +48,10 @@ has _done_typing_timer => (
     default => sub {
         my $self = shift;
         AE::timer 1, 0, sub {
-            if (!$self->last_run_check)
-            {
+            if (!$self->last_run_check) {
                 $self->check;
             }
-            else
-            {
+            else {
                 $self->_clear_done_typing_timer;
                 $self->_done_typing_timer;
             }
@@ -71,16 +69,14 @@ has _running_check => (
     default => 0,
 );
 
-sub file
-{
+sub file {
     my $self      = shift;
     my $file_name = $self->uri;
     $file_name =~ s!^file://!!;
     return $file_name;
 }
 
-sub perlcompile
-{
+sub perlcompile {
     my ($self, $errors, $global_cv) = @_;
     my $text = $self->text;
 
@@ -95,19 +91,16 @@ sub perlcompile
     $cv->cb(
         sub {
             $self->log->tracef("perlcompile done:\nstdout:%s\nstderr:%s", $stdout, $stderr);
-            if ($stdout !~ /^- syntax OK/)
-            {
-                foreach my $line (split('\n', $stderr))
-                {
+            if ($stdout !~ /^- syntax OK/) {
+                foreach my $line (split('\n', $stderr)) {
+
                     #syntax error at - line 2, near "$ea4!"
-                    if ($line =~ /^(.*) at (\S+) line (\d+),?(.*)/)
-                    {
+                    if ($line =~ /^(.*) at (\S+) line (\d+),?(.*)/) {
                         my $error    = $1 . $4;
                         my $filename = $2;
                         my $line_num = $3 - 1;  #adjust line number to deal with mapping
                         $self->log->trace('error found');
-                        if ($filename eq '-')
-                        {
+                        if ($filename eq '-') {
                             $filename = $self->file;
                         }
                         push @$errors, {
@@ -129,8 +122,7 @@ sub perlcompile
     );
 }
 
-sub perlcritic
-{
+sub perlcritic {
     my ($self, $errors, $global_cv) = @_;
     my $text = $self->text;
 
@@ -147,13 +139,11 @@ sub perlcritic
     $cv->cb(
         sub {
             $self->log->tracef("perlcretic done:\nstdout:%s\nstderr:%s", $stdout, $stderr);
-            if ($stdout !~ /^source OK/)
-            {
-                foreach my $line (split('\n', $stdout))
-                {
+            if ($stdout !~ /^source OK/) {
+                foreach my $line (split('\n', $stdout)) {
+
                     #syntax error at - line 2, near "$ea4!"
-                    if ($line =~ /^(\d+):(\d+) (.*)$/)
-                    {
+                    if ($line =~ /^(\d+):(\d+) (.*)$/) {
                         my $error    = $3;
                         my $filename = $self->file;
                         my $line_num = $1 - 1;      #adjust line number to deal with mapping
@@ -178,8 +168,7 @@ sub perlcritic
     );
 }
 
-sub _send_rpc
-{
+sub _send_rpc {
     my ($self, $hash) = @_;
     my $json   = to_json($hash);
     my $length = length(Encode::encode('UTF-8', $json));
@@ -188,8 +177,7 @@ sub _send_rpc
     $self->log->tracef($msg);
 }
 
-sub check
-{
+sub check {
     my $self   = shift;
     my $errors = [];
     $self->last_run_check(time);

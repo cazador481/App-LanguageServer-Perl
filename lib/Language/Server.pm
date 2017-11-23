@@ -21,11 +21,11 @@ with 'MooX::Log::Any';         # enable logger
 
 #VERSION
 
-has documents => ( 
-   is => 'ro',
-   isa => HashRef,
-   default=>sub {{}},
-   documentation=>'files to process',
+has documents => (
+    is            => 'ro',
+    isa           => HashRef,
+    default       => sub {{}},
+    documentation => 'files to process',
 );
 
 has value => (
@@ -33,26 +33,23 @@ has value => (
     default => 0,
 );
 
-has rootpath => ( 
-   is => 'ro',
-);
-sub didOpen
-{
+has rootpath => (is => 'ro',);
+
+sub didOpen {
     my ($self, %params) = @_;
     my $uri = $params{textDocument}->{uri};
     my $document = Language::Server::Document->new(uri => $uri, text => $params{textDocument}->{text});
-    $self->documents->{$uri}=$document;
+    $self->documents->{$uri} = $document;
     $self->log->tracef("Editor opened file %s", $uri);
     return;
 }
 
-sub initialize
-{
+sub initialize {
     my ($self, $params) = @_;
     my $ret = {
         capabilities => {
 
-            textDocumentSync =>  1,
+            textDocumentSync => 1,
 
             #  The server provides hover support.
 
@@ -78,26 +75,24 @@ sub initialize
     return $ret;
 }
 
-sub didChange
-{
+sub didChange {
     my ($self, %params) = @_;
     $self->log->trace('didChange');
 
     # didChange returns full document change, at this time
-    my $text=$params{contentChanges}->[0]->{text};
-    my $doc=$self->_get_document($params{textDocument}->{uri});
+    my $text = $params{contentChanges}->[0]->{text};
+    my $doc  = $self->_get_document($params{textDocument}->{uri});
     $doc->text($text);
+
     # $doc->check;
 }
 
-sub didSave
-{
+sub didSave {
     my ($self, %params) = @_;
     $self->log->trace('didSave');
 }
 
-sub rename
-{
+sub rename {
     my ($self, %params) = @_;
     $self->log->trace('rename');
     my $uri = $params{textDocument}->{uri};
@@ -105,6 +100,7 @@ sub rename
 
     my $line = $params{position}->{line} + 1;
     my $col  = $params{position}->{character};
+
     #TODO deal with multiples
 
     my $new_output;
@@ -119,13 +115,14 @@ sub rename
 
     my $ret = {
         changes => {
-            $uri => [{
-                range => {
-                    start => {line => 0, character => 0},
-                    end   => {line => 9_999_999, character => 0},
+            $uri => [
+                {
+                    range => {
+                        start => {line => 0,         character => 0},
+                        end   => {line => 9_999_999, character => 0},
+                    },
+                    newText => $new_output,
                 },
-                newText => $new_output,
-            },
             ],
         }
     };
@@ -138,36 +135,37 @@ sub rename
 sub formatting {
     my ($self, %params) = @_;
     $self->log->info(np(%params));
-    my $uri      = $params{textDocument}->{uri};
-    if (! defined $uri) {
-        return (0,-32602,'uri is not set');
+    my $uri = $params{textDocument}->{uri};
+    if (!defined $uri) {
+        return (0, -32602, 'uri is not set');
     }
     my $text     = $self->_get_document_content($uri);
     my $new_text = $self->tidy($text);
 
-    my $ret = [{
-                range => {
-                    start => {line => 0, character => 0},
-                    end   => {line => 9_999_999, character => 0},
-                },
-        newText => $new_text,
-    },
+    my $ret = [
+        {
+            range => {
+                start => {line => 0,         character => 0},
+                end   => {line => 9_999_999, character => 0},
+            },
+            newText => $new_text,
+        },
     ];
     return $ret;
 
 }
 
-sub range_formatting{
-    my ($self,%params)=@_;
+sub range_formatting {
+    my ($self, %params) = @_;
 
-    my $uri      = $params{textDocument}->{uri};
-    if (! defined $uri) {
-        return (0,-32602,'uri is not set');
+    my $uri = $params{textDocument}->{uri};
+    if (!defined $uri) {
+        return (0, -32602, 'uri is not set');
     }
-    my $text     = $self->_get_document_content($uri);
-    my @text_lines=split("\n",$text);
-    my @lines_to_tidy=$text_lines[$params{range}->{start}->{line}-1 ... $params{range}->{end}->{line}-1];
-    my $new_text = $self->tidy(join("\n",@lines_to_tidy));
+    my $text          = $self->_get_document_content($uri);
+    my @text_lines    = split("\n", $text);
+    my @lines_to_tidy = $text_lines[$params{range}->{start}->{line} - 1 ... $params{range}->{end}->{line} - 1];
+    my $new_text      = $self->tidy(join("\n", @lines_to_tidy));
 
     my $ret = [
         {
@@ -179,39 +177,39 @@ sub range_formatting{
 }
 
 sub tidy {
-    my ($self,$content)=@_;
+    my ($self, $content) = @_;
     my $output;
     my $error_flag = Perl::Tidy::perltidy(
-        source=>\$content,
+        source      => \$content,
         destination => \$output
     );
     chomp $output;
-    $self->log->infof('Tidy:[%s]',$output);
+    $self->log->infof('Tidy:[%s]', $output);
     return $output;
 }
 
-sub _get_document_content{
-    my ($self,$uri)=@_;
+sub _get_document_content {
+    my ($self, $uri) = @_;
     return if (!defined $uri);
     return $self->_get_document($uri)->text;
 }
 
-sub _get_document{
-    my ($self,$uri)=@_;
+sub _get_document {
+    my ($self, $uri) = @_;
     my $document;
     return if (!defined $uri);
-    if (defined  $self->documents->{$uri}){
-        $document=$self->documents->{$uri};
+    if (defined $self->documents->{$uri}) {
+        $document = $self->documents->{$uri};
     }
-    else{
-        $document=Language::Server::Document->new(uri=>$uri);
-        $self->documents->{$uri}=$document;
+    else {
+        $document = Language::Server::Document->new(uri => $uri);
+        $self->documents->{$uri} = $document;
     }
 
     return $document;
 }
 
-sub didChangeConfiguration{
-    my ($self,%params)=@_;
+sub didChangeConfiguration {
+    my ($self, %params) = @_;
 }
 1;
