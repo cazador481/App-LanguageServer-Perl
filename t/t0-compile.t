@@ -27,9 +27,6 @@ foreach my $file (@files) {
 $ast->finish;
 done_testing;
 
-# all_pm_files_ok;
-# $test->done_testing;
-
 sub test_module {
     my $file = shift;
     if (-f $file) {

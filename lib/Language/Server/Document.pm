@@ -6,10 +6,17 @@ use File::Slurp;
 use AnyEvent::Util;
 use AnyEvent;
 use Data::Printer;
-use JSON;
+use Cpanel::JSON::XS;
+use Language::Server::Config;
 with 'MooX::Log::Any';
 
 #VERSION
+
+has _config => ( 
+   is => 'rw',
+   default=> sub {Language::Server::Config->instance},
+   documentation=>'configuration',
+);
 
 has 'uri' => (
     is            => 'ro',
@@ -203,4 +210,3 @@ sub check {
 }
 
 1;
-

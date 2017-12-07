@@ -18,9 +18,17 @@ use feature qw(state);
 with 'MooX::Log::Any';         # enable logger
 
 # use namespace::autoclean;
+#
+#
 
 #VERSION
 
+has plsense => ( 
+   is => 'rw',
+   isa => Bool,
+   default=>1,
+   documentation=>'enable plense',
+);
 has documents => (
     is            => 'ro',
     isa           => HashRef,
@@ -33,7 +41,7 @@ has value => (
     default => 0,
 );
 
-has rootpath => (is => 'ro',);
+has rootpath => (is => 'rw',);
 
 sub didOpen {
     my ($self, %params) = @_;
@@ -45,30 +53,32 @@ sub didOpen {
 }
 
 sub initialize {
-    my ($self, $params) = @_;
+    my ($self, %params) = @_;
+    $self->rootpath($params{rootUri});
+    $self->plsense($params{initializedOptions}->{plense}) if ($params{initializedOptions}->{plense});
     my $ret = {
         capabilities => {
 
-            textDocumentSync => 1,
+            textDocumentSync => 0,
 
             #  The server provides hover support.
 
-            hoverProvider => 0,
+            hoverProvider => \0,
 
             # completionProvider => CompletionOptions,
             # signatureHelpProvider => SignatureHelpOptions,
-            definitionProvider        => 0,
-            referencesProvider        => 0,
-            documentHighlightProvider => 0,
+            definitionProvider        =>\0,
+            referencesProvider        =>\0,
+            documentHighlightProvider =>\0,
 
-            documentSymbolProvider           => 0,
-            workspaceSymbolProvider          => 0,
-            codeActionProvider               => 0,
-            codeLensProvider                 => 0,
-            documentFormattingProvider       => 1,
-            documentRangeFormattingProvider  => 1,
+            documentSymbolProvider           =>\0,
+            workspaceSymbolProvider          =>\0,
+            codeActionProvider               =>\0,
+            codeLensProvider                 =>\0,
+            documentFormattingProvider       =>\1,
+            documentRangeFormattingProvider  =>\1,
             documentOnTypeFormattingProvider => {},
-            renameProvider                   => 1
+            renameProvider                   =>\1
 
         }
     };
@@ -83,7 +93,6 @@ sub didChange {
     my $text = $params{contentChanges}->[0]->{text};
     my $doc  = $self->_get_document($params{textDocument}->{uri});
     $doc->text($text);
-
     # $doc->check;
 }
 
