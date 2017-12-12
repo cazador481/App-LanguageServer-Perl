@@ -90,6 +90,8 @@ sub didChange {
 
     # didChange returns full document change, at this time
     my $doc  = $self->_get_document($params{textDocument}->{uri});
+    #contentChanges => [{text => $text, range => {},},],
+    my $text=$params{contentChanges}->[0]->{text};
     $doc->text($text);
     # $doc->check;
 }

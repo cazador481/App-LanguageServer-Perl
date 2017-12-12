@@ -206,7 +206,7 @@ sub perlcritic {
 
 sub _send_rpc {
     my ($self, $hash) = @_;
-    my $json   = to_json($hash);
+    my $json   = encode_json($hash);
     my $length = length(Encode::encode('UTF-8', $json));
     my $msg    = sprintf("Content-Length: %i\r\n\r\n%s\r\n", $length + 2, $json);
     print $msg;
