@@ -1,5 +1,4 @@
 only = 1
-#force = 1
 severity = 1
 
 [Bangs::ProhibitBitwiseOperators]
@@ -13,8 +12,10 @@ severity = 1
 [InputOutput::ProhibitInteractiveTest]
 [InputOutput::ProhibitTwoArgOpen]
 [InputOutput::RequireEncodingWithUTF8Layer]
+
 [Modules::ProhibitEvilModules]
 modules = Fatal {Found use of Fatal. Use autodie instead} AS::API::Long_Term {Use AS::API->new(type=>'historical') instead}
+
 [Modules::RequireBarewordIncludes]
 [Modules::RequireFilenameMatchesPackage]
 [Subroutines::ProhibitExplicitReturnUndef]
@@ -26,6 +27,7 @@ modules = Fatal {Found use of Fatal. Use autodie instead} AS::API::Long_Term {Us
 [ValuesAndExpressions::ProhibitLeadingZeros]
 [Variables::ProhibitConditionalDeclarations]
 [Variables::RequireLexicalLoopIterators]
+[Modules::RequireVersionVar]
 
 #[Subroutines::RequireArgUnpacking]
 [TestingAndDebugging::RequireUseStrict]
@@ -50,4 +52,4 @@ forbid=bases close contract last left no record right second set
 
 [Subroutines::ProhibitUnusedPrivateSubroutines]
 private_name_regex=_(?!trigger_|build_)\w+
-# [Modules::RequireVersionVar]
+
