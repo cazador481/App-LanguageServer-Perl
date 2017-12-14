@@ -33,10 +33,10 @@ has lsp => (
    is => 'lazy',
    default=> sub { Language::Server->new},
 );
-
 sub register_methods {
     my $self = shift;
     $self->server->register_named('initialize', sub {$self->lsp->initialize(@_)});
+    $self->server->register_named('initialized', sub {return});
 
 ##### register commands #####
     $self->server->register_named('workspace/didChangeConfiguration', sub {$self->lsp->didChangeConfiguration(@_)});
@@ -108,6 +108,7 @@ sub process {
         my $data = decode_json($line);
 
         $log->tracef("method called %s, id %s", $data->{method}, $data->{id} // 'null');
+        $log->tracef("json in: %s", $data);
     }
     catch {
         $log->tracef('not json %s', $line);

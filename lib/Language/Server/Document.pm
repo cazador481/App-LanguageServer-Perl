@@ -55,7 +55,7 @@ has _done_typing_timer => (
     default => sub {
         my $self = shift;
         AE::timer 1, 0, sub {
-            if (!$self->last_run_check) {
+            if (!$self->_running_check) {
                 $self->check;
             }
             else {
@@ -145,7 +145,7 @@ sub perlcritic {
     );
     $cv->cb(
         sub {
-            $self->log->tracef("perlcretic done:\nstdout:%s\nstderr:%s", $stdout, $stderr);
+            $self->log->tracef("perlcritic done:\nstdout:%s\nstderr:%s", $stdout, $stderr);
             if ($stdout !~ /^source OK/) {
                 foreach my $line (split('\n', $stdout)) {
 
@@ -155,7 +155,6 @@ sub perlcritic {
                         my $filename = $self->file;
                         my $line_num = $1 - 1;      #adjust line number to deal with mapping
                         my $char     = $2 + 0;
-                        $self->log->trace('error found');
                         push @$errors, {
                             range => {
                                 start => {line => $line_num, character => $char},
@@ -177,7 +176,7 @@ sub perlcritic {
 
 sub _send_rpc {
     my ($self, $hash) = @_;
-    my $json   = to_json($hash);
+    my $json   = encode_json($hash);
     my $length = length(Encode::encode('UTF-8', $json));
     my $msg    = sprintf("Content-Length: %i\r\n\r\n%s\r\n", $length + 2, $json);
     print $msg;
@@ -187,7 +186,7 @@ sub _send_rpc {
 sub check {
     my $self   = shift;
     my $errors = [];
-    $self->last_run_check(time);
+    # $self->last_run_check(time);
     $self->_running_check(1);
     my $cv = AnyEvent->condvar;
     $cv->begin;
