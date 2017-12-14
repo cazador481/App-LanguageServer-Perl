@@ -59,7 +59,8 @@ sub initialize {
     my $ret = {
         capabilities => {
 
-            textDocumentSync => 0,
+            # textDocumentSync => 0,
+            textDocumentSync => 1, #full sync
 
             #  The server provides hover support.
 
