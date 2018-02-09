@@ -10,6 +10,7 @@ use IPC::Run3;
 use PPIx::EditorTools::RenameVariable;
 use Perl::Tidy;
 use Language::Server::Document;
+use Language::Server::Plsense;
 use JSON;
 
 use feature qw(state);
@@ -56,6 +57,9 @@ sub initialize {
     my ($self, %params) = @_;
     $self->rootpath($params{rootUri});
     $self->plsense($params{initializedOptions}->{plense}) if ($params{initializedOptions}->{plense});
+    if ($self->plsense) {
+        Language::Server::Plsense->start;
+    }
     my $ret = {
         capabilities => {
 
@@ -89,9 +93,8 @@ sub didChange {
     $self->log->trace('didChange');
 
     # didChange returns full document change, at this time
-    my $doc  = $self->_get_document($params{textDocument}->{uri});
-    #contentChanges => [{text => $text, range => {},},],
     my $text=$params{contentChanges}->[0]->{text};
+    my $doc  = $self->_get_document($params{textDocument}->{uri});
     $doc->text($text);
     # $doc->check;
 }
@@ -220,5 +223,23 @@ sub _get_document {
 
 sub didChangeConfiguration {
     my ($self, %params) = @_;
+}
+
+
+sub completion{
+# [Tue Dec 12 11:15:12 2017] [
+#     [0] "textDocument",
+#     [1] {
+#         uri   "file:///home/eash/scripts/Language-Server/t/test.pm"
+#     },
+#     [2] "position",
+#     [3] {
+#         character   5,
+#         line        7
+#     }
+# ]
+my ($self,%params)=@_;
+$self->_get_document_content($params{textDocument}->{uri})->completion(%params)
+
 }
 1;

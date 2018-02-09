@@ -43,7 +43,7 @@ sub register_methods {
     $self->server->register_named('textDocument/didOpen',             sub {$self->lsp->didOpen(@_)});
     $self->server->register_named('textDocument/didChange',           sub {$self->lsp->didChange(@_)});
     $self->server->register_named('textDocument/rename',              sub {$self->lsp->rename(@_)});
-    $self->server->register_named('textDocument/completion',          sub {return});
+    $self->server->register_named('textDocument/completion',          sub {use Data::Dumper;$log->trace(np(@_)); return});
     $self->server->register_named('textDocument/didSave',             sub {return});
     $self->server->register_named('textDocument/formatting',          sub {$self->lsp->formatting(@_)});
     $self->server->register_named('textDocument/rangeFormatting',     sub {$self->lsp->range_formatting(@_)});
@@ -100,6 +100,7 @@ sub run {
     EV::run;
 
 }
+
 
 sub process {
     my $self=shift;

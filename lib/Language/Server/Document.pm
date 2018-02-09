@@ -12,10 +12,10 @@ with 'MooX::Log::Any';
 
 #VERSION
 
-has _config => ( 
-   is => 'rw',
-   default=> sub {Language::Server::Config->instance},
-   documentation=>'configuration',
+has _config => (
+    is            => 'rw',
+    default       => sub {Language::Server::Config->instance},
+    documentation => 'configuration',
 );
 
 has 'uri' => (
@@ -82,34 +82,27 @@ sub file {
     $file_name =~ s!^file://!!;
     return $file_name;
 }
+
 # parse for plsense
-sub plsense_codeadd
-{
+sub plsense_codeadd {
     my $self;
 
-    system("plsense o " . $self->file);
+    Language::Server::Plsense->on_file($self->file);
     my @lines;
-    foreach my $line (split(/\n/, @{$self->text})){
-        if ($line =~ /^\s+package (\S+)/)
-        {
+    foreach my $line (split(/\n/, @{$self->text})) {
+        if ($line =~ /^\s+package (\S+)/) {
             my $package = $1;
-            system("plsense codeadd " . join("\n", @lines));
-            system("plsense onmod $package");
+            Language::Server::Plsense::code_add(\@lines);
+            Language::Server::Plsense->on_package($package);
             @lines = undef;
         }
-        else
-        {
+        else {
             push @lines, $line;
         }
-      }
-      if (@lines)
-    {
-        system("plsense codeadd " . join("\n", @lines));
     }
-}
-
-sub plsense_start {
-            system('plsense serverstart');
+    if (@lines) {
+        Language::Server::Plsense::code_add(\@lines);
+    }
 }
 
 sub perlcompile {
@@ -238,4 +231,30 @@ sub check {
     $self->_send_rpc($ret);
 }
 
+sub completion {
+    my ($self, %params) = @_;
+
+    my $line        = _get_line($params{Position}->{line});
+    my $data        = substr($line, 0, $params{Position}->{character});
+    my $completions=[];
+    if ($self->_config->plsense) { 
+        $completions = Language::Server::Plsense->assist($data);
+    }
+    my @items;
+    foreach my $comp ( @$completions) {
+        push @items, {label => insertText => $comp,}
+
+    }
+    return {
+        isIncomplete => \0,
+        items        => \@items,
+    };
+}
+
+#0 based index
+sub _get_line {
+    my ($self, $line) = @_;
+    my @lines = split(/\n/, @{$self->text}, $line + 1);
+    return $lines[$line];
+}
 1;

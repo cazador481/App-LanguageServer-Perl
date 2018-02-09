@@ -6,6 +6,7 @@ use lib "$FindBin::RealBin/../lib";
 use lib "$FindBin::RealBin/../bin";
 require "$FindBin::RealBin/../bin/slp.pl";
 
+use Language::Server::Plsense;
 my $server=slp->new;
 $server->register_methods;
 
@@ -34,9 +35,11 @@ try_ok {
         contentChanges => [{text => $text, range => {},},],
     );
 };
-
+Language::Server::Plsense->stop;
+note ("End of test");
 ## test _get_document
 done_testing;
+note ("End of test");
 
 sub init_func {
     return {
