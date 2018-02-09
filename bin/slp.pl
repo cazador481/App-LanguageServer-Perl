@@ -1,6 +1,7 @@
+#!/usr/bin/env perl
 #!/home/utils/perl-5.22/5.22.0-016/bin/perl
 # PODNAME: slp.pl
-#
+
 use FindBin;
 use lib "$FindBin::RealBin/../lib";
 use lib '/home/eash/.perlbrew/libs/5.24-latest@plsense/lib/perl5';
