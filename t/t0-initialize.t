@@ -7,45 +7,59 @@ use lib "$FindBin::RealBin/../bin";
 require "$FindBin::RealBin/../bin/slp.pl";
 
 use Language::Server::Plsense;
-my $server=slp->new;
+my $server = slp->new;
 $server->register_methods;
 
-my $lsp=$server->lsp;
+my $lsp  = $server->lsp;
 my $init = init_func();
 my $ret;
-try_ok{$ret=$lsp->initialize(%$init)};
-isnt($lsp->rootpath,undef,'rootpath set');
-my $text='this is text';
-my $uri='file:///tmp/test.pm';
+try_ok {$ret = $lsp->initialize(%$init)};
+isnt($lsp->rootpath, undef, 'rootpath set');
+is($lsp->plsense, 0, 'verify plsense variable is not set');
+
+$init->{initializedOptions}->{plsense} = 1;
+try_ok {$ret = $lsp->initialize(%$init)};
+
+use Data::Printer;
+p($lsp);
+my $text = "my \$self;\n\$se";
+my $uri  = 'file:///tmp/test.pm';
 
 try_ok {
     $ret = $lsp->didOpen(
         textDocument => {
-            uri          => $uri,
+            uri  => $uri,
             text => $text,
         },
       ),
       'open file'
 };
 
-is($lsp->plsense,1,'verify plsense variable set');
 try_ok {
     $ret = $lsp->didChange(
-        textDocument   => {uri   => $uri},
+        textDocument => {uri => $uri},
         contentChanges => [{text => $text, range => {},},],
     );
 };
-Language::Server::Plsense->stop;
-note ("End of test");
+try_ok {$ret = $lsp->completion(
+    {
+        textDocument => uri => $uri,
+        position => {character => 3, line => 1},
+    },
+);
+};
+
+# Language::Server::Plsense->stop;
+note("End of test");
 ## test _get_document
 done_testing;
-note ("End of test");
+note("End of test");
 
 sub init_func {
     return {
         processId          => undef,
         rootUri            => "file://$FindBin::RealBin/t/",
-        initializedOptions => {plsense=>0},
+        initializedOptions => {plsense => 0},
         capabilities       => {
             workspace => {
                 applyEdit              => \1,
@@ -60,7 +74,7 @@ sub init_func {
                     dynamicRegistration => \1,
                     willSave            => \0,
                     willSaveWaitUntil   => \0,
-                    didSaeve            => \0,
+                    didSave             => \0,
                 },
                 completion => {
                     dynamicRegistration => \0,
@@ -206,10 +220,10 @@ sub init_func {
 }
 
 sub send_rpc {
-      my ($data) = @_;
-      my $length = length(Encode::encode('UTF-8', $data));
-      return if $length == 0;
-      my $msg = sprintf("Content-Length: %i\r\n\r\n%s\r\n", $length + 2, $data);
-      print $msg;
+    my ($data) = @_;
+    my $length = length(Encode::encode('UTF-8', $data));
+    return if $length == 0;
+    my $msg = sprintf("Content-Length: %i\r\n\r\n%s\r\n", $length + 2, $data);
+    print $msg;
 
 }

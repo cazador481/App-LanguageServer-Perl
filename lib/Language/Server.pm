@@ -56,19 +56,24 @@ sub didOpen {
 sub initialize {
     my ($self, %params) = @_;
     $self->rootpath($params{rootUri});
-    $self->plsense($params{initializedOptions}->{plense}) if ($params{initializedOptions}->{plense});
+    $self->plsense($params{initializedOptions}->{plsense}) if (defined $params{initializedOptions}->{plsense});
     if ($self->plsense) {
         Language::Server::Plsense->start;
     }
     my $ret = {
         capabilities => {
 
-            textDocumentSync => 0,
+            textDocumentSync => {openClose =>\1,
+            change=>1,# does full text document sync
+            willSave=>\0,
+            willSaveWaitUntil=>\0,
+            save=>\1,
+        }, 
             #  The server provides hover support.
 
             hoverProvider => \0,
 
-            # completionProvider => CompletionOptions,
+            completionProvider => {resolveProvider=>\$self->plsense},
             # signatureHelpProvider => SignatureHelpOptions,
             definitionProvider        =>\0,
             referencesProvider        =>\0,
