@@ -12,6 +12,15 @@ but the idea is to allow editors/IDEs to support a variety of languages
 without needing to reimplement lang-specific features themselves or,
 as in most cases, not implementing them at all.
 
+# INSTALLATION
+
+* `git clone https://github.com/cazador481/App-LanguageServer-Perl`
+* `cd App-LanguageServer-Perl`
+* `perl Build.PL`
+* `sudo ./Build installdeps`
+* To start the server 
+    `perl bin/slp.pl`
+
 # FEATURES
 
 * [Perl::Tidy](https://metacpan.org/pod/Perl::Tidy) full document formatting, and range formatting
