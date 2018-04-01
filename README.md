@@ -19,8 +19,17 @@ as in most cases, not implementing them at all.
 * linting via perl -c
 * linting via perlcritic
 
-#TODO
+# Installation instructions
+
+This project is based on dzil.  To install the develoment version you need to run
+* cpanm Dist::Zilla
+* dzil listdepedencies | cpanm
+* dzil install
+
+
+# TODO
 
 * Code completion via plsense
 * Package renaming to match path path
 * Make configurable via config file of some type
+* Add some tests
