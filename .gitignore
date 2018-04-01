@@ -2,5 +2,3 @@
 .build
 *.ERR
 *.tdy
-Build
-_build/*
