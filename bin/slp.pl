@@ -44,6 +44,7 @@ sub register_methods {
     $self->server->register_named('textDocument/didOpen',             sub {$self->lsp->didOpen(@_)});
     $self->server->register_named('textDocument/didChange',           sub {$self->lsp->didChange(@_)});
     $self->server->register_named('textDocument/rename',              sub {$self->lsp->rename(@_)});
+    $self->server->register_named('textDocument/definition',          sub {$self->lsp->definition(@_)});
     $self->server->register_named('textDocument/completion',          sub {return});
     $self->server->register_named('textDocument/didSave',             sub {return});
     $self->server->register_named('textDocument/formatting',          sub {$self->lsp->formatting(@_)});

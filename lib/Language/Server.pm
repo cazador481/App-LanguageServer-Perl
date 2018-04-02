@@ -10,11 +10,14 @@ use IPC::Run3;
 use PPIx::EditorTools::RenameVariable;
 use Perl::Tidy;
 use Language::Server::Document;
+use Language::Server::Editor qw();
 use JSON;
 
 use feature qw(state);
 
 # use constant SELF=>class_type {class=>__PACKAGE__}; # Type::Type class self
+use constant LSPErrorCode_InvalidParams => -32602;
+
 with 'MooX::Log::Any';         # enable logger
 
 # use namespace::autoclean;
@@ -68,7 +71,7 @@ sub initialize {
 
             # completionProvider => CompletionOptions,
             # signatureHelpProvider => SignatureHelpOptions,
-            definitionProvider        =>\0,
+            definitionProvider        =>\1,
             referencesProvider        =>\0,
             documentHighlightProvider =>\0,
 
@@ -140,6 +143,38 @@ sub rename {
 
     my @lines;
 
+}
+
+sub definition {
+    my ($self, %params) = @_;
+    $self->log->trace('definition');
+    my $uri = $params{textDocument}->{uri};
+    $self->log->trace("uri is $uri");
+
+    my $line   = $params{position}->{line} + 1;
+    my $column = $params{position}->{character};
+
+    my $document = $self->_get_document($uri);
+    my $editor   = Language::Server::Editor->new();
+    my $result   = $editor->get_declaration($document, $line, $column);
+
+    my $return = (defined $result)
+        ? [     # Success
+            {                                       # result
+                uri   => $uri,
+                range => {
+                    start => {line => $result->{line}, character => $result->{column}},
+                    end   => {line => $result->{line}, character => $result->{column}},
+                },
+            }
+        ]
+        : [     # Failure
+            undef,                                  # result
+            LSPErrorCode_InvalidParams,             # code
+            'Failed to find the symbol defination', # message
+            undef,                                  # data
+        ];
+    return @{$return};
 }
 
 sub formatting {
